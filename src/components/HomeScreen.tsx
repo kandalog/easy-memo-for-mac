@@ -40,57 +40,65 @@ export default function HomeScreen() {
         const textarea = e.currentTarget;
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
-        
+
         // Check if cursor is on a line that contains "・" (with or without indentation)
         const lines = text.substring(0, start).split('\n');
         const currentLine = lines[lines.length - 1];
-        
+
         if (currentLine.match(/^\s*・/)) {
           // Find the start of the current line
           const lineStartIndex = text.lastIndexOf('\n', start - 1) + 1;
           // Insert 2 spaces at the beginning of the line
-          const newText = 
-            text.substring(0, lineStartIndex) + 
-            '  ' + 
-            text.substring(lineStartIndex);
-          
+          const newText = `${text.substring(
+            0,
+            lineStartIndex,
+          )}  ${text.substring(lineStartIndex)}`;
+
           setText(newText);
-          
+
           setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = start + 2;
+            const position = start + 2;
+            textarea.selectionStart = position;
+            textarea.selectionEnd = position;
           }, 0);
+
+          try {
+            window.electron.memo.save(newText);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to save memo:', error);
+          }
         } else {
           // Default behavior: insert 2 spaces at cursor position
-          const newText = text.substring(0, start) + '  ' + text.substring(end);
-          
-          setText(newText);
-          
-          setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = start + 2;
-          }, 0);
-        }
+          const newText = `${text.substring(0, start)}  ${text.substring(end)}`;
 
-        try {
-          const textToSave = currentLine.match(/^\s*・/) 
-            ? text.substring(0, lineStartIndex) + '  ' + text.substring(lineStartIndex)
-            : text.substring(0, start) + '  ' + text.substring(end);
-          window.electron.memo.save(textToSave);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error('Failed to save memo:', error);
+          setText(newText);
+
+          setTimeout(() => {
+            const position = start + 2;
+            textarea.selectionStart = position;
+            textarea.selectionEnd = position;
+          }, 0);
+
+          try {
+            window.electron.memo.save(newText);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to save memo:', error);
+          }
         }
       } else if (e.key === 'Enter' && !isComposing) {
         const textarea = e.currentTarget;
         const start = textarea.selectionStart;
         const lines = text.substring(0, start).split('\n');
         const currentLine = lines[lines.length - 1];
-        
+
         // Check for indented bullet line (spaces + ・)
         const bulletMatch = currentLine.match(/^(\s*)・(.*)$/);
-        
+
         if (bulletMatch) {
           const [, indent, content] = bulletMatch;
-          
+
           if (content === '') {
             // Empty bullet line - remove it
             e.preventDefault();
@@ -98,9 +106,9 @@ export default function HomeScreen() {
             const newText =
               text.substring(0, lineStart) +
               text.substring(textarea.selectionEnd);
-            
+
             setText(newText);
-            
+
             setTimeout(() => {
               textarea.selectionStart = lineStart;
               textarea.selectionEnd = lineStart;
@@ -115,13 +123,13 @@ export default function HomeScreen() {
           } else {
             // Non-empty bullet line - create new bullet with same indentation
             e.preventDefault();
-            const newText =
-              text.substring(0, start) +
-              '\n' + indent + '・' +
-              text.substring(textarea.selectionEnd);
-            
+            const newText = `${text.substring(
+              0,
+              start,
+            )}\n${indent}・${text.substring(textarea.selectionEnd)}`;
+
             setText(newText);
-            
+
             setTimeout(() => {
               const newCursorPosition = start + 1 + indent.length + 1;
               textarea.selectionStart = newCursorPosition;

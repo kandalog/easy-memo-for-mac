@@ -29,8 +29,14 @@ let mainWindow: BrowserWindow | null = null;
 const store = new Store({
   name: 'memo-data',
   defaults: {
-    memoText: ''
-  }
+    memoText: '',
+    windowBounds: {
+      x: undefined,
+      y: undefined,
+      width: 450,
+      height: 600,
+    },
+  },
 });
 
 ipcMain.on('ipc-example', async (event, arg) => {
@@ -85,10 +91,20 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
-  mainWindow = new BrowserWindow({
-    show: false,
+  // Get saved window bounds
+  const savedBounds = store.get('windowBounds', {
+    x: undefined,
+    y: undefined,
     width: 450,
     height: 600,
+  });
+
+  mainWindow = new BrowserWindow({
+    show: false,
+    x: savedBounds.x,
+    y: savedBounds.y,
+    width: savedBounds.width,
+    height: savedBounds.height,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -107,6 +123,21 @@ const createWindow = async () => {
       mainWindow.minimize();
     } else {
       mainWindow.show();
+    }
+  });
+
+  // Save window position and size when moved or resized
+  mainWindow.on('moved', () => {
+    if (mainWindow) {
+      const bounds = mainWindow.getBounds();
+      store.set('windowBounds', bounds);
+    }
+  });
+
+  mainWindow.on('resized', () => {
+    if (mainWindow) {
+      const bounds = mainWindow.getBounds();
+      store.set('windowBounds', bounds);
     }
   });
 
