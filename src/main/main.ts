@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, globalShortcut } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import Store from 'electron-store';
@@ -141,6 +141,14 @@ const createWindow = async () => {
     }
   });
 
+  // Handle window close event - hide instead of close on macOS
+  mainWindow.on('close', (event) => {
+    if (process.platform === 'darwin') {
+      event.preventDefault();
+      mainWindow?.hide();
+    }
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -159,6 +167,21 @@ const createWindow = async () => {
   new AppUpdater();
 };
 
+// Toggle window visibility with global shortcut
+const toggleWindow = () => {
+  if (!mainWindow) {
+    createWindow();
+    return;
+  }
+
+  if (mainWindow.isVisible()) {
+    mainWindow.hide();
+  } else {
+    mainWindow.show();
+    mainWindow.focus();
+  }
+};
+
 /**
  * Add event listeners...
  */
@@ -175,10 +198,20 @@ app
   .whenReady()
   .then(() => {
     createWindow();
+
+    // Register global shortcut Command+Shift+M (Cmd+Shift+M on macOS)
+    globalShortcut.register('CommandOrControl+Shift+M', toggleWindow);
+
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) createWindow();
+      else if (!mainWindow.isVisible()) mainWindow.show();
     });
   })
   .catch(console.log);
+
+app.on('will-quit', () => {
+  // Unregister all shortcuts
+  globalShortcut.unregisterAll();
+});
