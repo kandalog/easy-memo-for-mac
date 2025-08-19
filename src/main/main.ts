@@ -15,30 +15,6 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
-let storeData: any;
-
-// ESModule, CommonJSの関係で動的にimportする必要がある
-const initializeStore = async () => {
-  const Store = (await import('electron-store')).default;
-  const schema = {
-    todoList: {
-      type: 'array',
-      default: [],
-    },
-  };
-  storeData = new Store({ schema });
-};
-
-ipcMain.handle('loadTodoList', async () => {
-  if (!storeData) await initializeStore();
-  return storeData.get('todoList');
-});
-
-ipcMain.handle('storeTodoList', async (event, data) => {
-  if (!storeData) await initializeStore();
-  storeData.set('todoList', data);
-});
-
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
