@@ -32,10 +32,37 @@ export default function HomeScreen() {
     [],
   );
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const textarea = e.currentTarget;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const newText = text.substring(0, start) + '  ' + text.substring(end);
+        
+        setText(newText);
+        
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd = start + 2;
+        }, 0);
+
+        try {
+          window.electron.memo.save(newText);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('Failed to save memo:', error);
+        }
+      }
+    },
+    [text],
+  );
+
   return (
     <textarea
       value={text}
       onChange={handleTextChange}
+      onKeyDown={handleKeyDown}
       style={{
         width: '100vw',
         height: '100vh',
