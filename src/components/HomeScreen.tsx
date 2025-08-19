@@ -13,7 +13,7 @@ export default function HomeScreen() {
         border: 'none',
         padding: '10px',
         fontSize: '14px',
-        fontFamily: 'monospace',
+        fontFamily: 'Menlo, "ヒラギノ角ゴ ProN", monospace',
         resize: 'none',
         outline: 'none',
         margin: 0,
