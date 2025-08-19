@@ -41,7 +41,7 @@ export default function HomeScreen() {
         height: '100vh',
         border: 'none',
         padding: '10px',
-        fontSize: '14px',
+        fontSize: '18px',
         fontFamily: 'Menlo, "ヒラギノ角ゴ ProN", monospace',
         resize: 'none',
         outline: 'none',
