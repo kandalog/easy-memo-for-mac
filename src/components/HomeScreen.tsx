@@ -41,11 +41,11 @@ export default function HomeScreen() {
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
         
-        // Check if cursor is on a line that starts with "・"
+        // Check if cursor is on a line that contains "・" (with or without indentation)
         const lines = text.substring(0, start).split('\n');
         const currentLine = lines[lines.length - 1];
         
-        if (currentLine.startsWith('・')) {
+        if (currentLine.match(/^\s*・/)) {
           // Find the start of the current line
           const lineStartIndex = text.lastIndexOf('\n', start - 1) + 1;
           // Insert 2 spaces at the beginning of the line
@@ -71,7 +71,7 @@ export default function HomeScreen() {
         }
 
         try {
-          const textToSave = currentLine.startsWith('・') 
+          const textToSave = currentLine.match(/^\s*・/) 
             ? text.substring(0, lineStartIndex) + '  ' + text.substring(lineStartIndex)
             : text.substring(0, start) + '  ' + text.substring(end);
           window.electron.memo.save(textToSave);
@@ -85,46 +85,55 @@ export default function HomeScreen() {
         const lines = text.substring(0, start).split('\n');
         const currentLine = lines[lines.length - 1];
         
-        if (currentLine === '・') {
-          e.preventDefault();
-          const lineStart = text.lastIndexOf('\n', start - 1) + 1;
-          const newText =
-            text.substring(0, lineStart) +
-            text.substring(textarea.selectionEnd);
+        // Check for indented bullet line (spaces + ・)
+        const bulletMatch = currentLine.match(/^(\s*)・(.*)$/);
+        
+        if (bulletMatch) {
+          const [, indent, content] = bulletMatch;
           
-          setText(newText);
-          
-          setTimeout(() => {
-            textarea.selectionStart = lineStart;
-            textarea.selectionEnd = lineStart;
-          }, 0);
+          if (content === '') {
+            // Empty bullet line - remove it
+            e.preventDefault();
+            const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+            const newText =
+              text.substring(0, lineStart) +
+              text.substring(textarea.selectionEnd);
+            
+            setText(newText);
+            
+            setTimeout(() => {
+              textarea.selectionStart = lineStart;
+              textarea.selectionEnd = lineStart;
+            }, 0);
 
-          try {
-            window.electron.memo.save(newText);
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Failed to save memo:', error);
-          }
-        } else if (currentLine.startsWith('・')) {
-          e.preventDefault();
-          const newText =
-            text.substring(0, start) +
-            '\n・' +
-            text.substring(textarea.selectionEnd);
-          
-          setText(newText);
-          
-          setTimeout(() => {
-            const newCursorPosition = start + 2;
-            textarea.selectionStart = newCursorPosition;
-            textarea.selectionEnd = newCursorPosition;
-          }, 0);
+            try {
+              window.electron.memo.save(newText);
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.error('Failed to save memo:', error);
+            }
+          } else {
+            // Non-empty bullet line - create new bullet with same indentation
+            e.preventDefault();
+            const newText =
+              text.substring(0, start) +
+              '\n' + indent + '・' +
+              text.substring(textarea.selectionEnd);
+            
+            setText(newText);
+            
+            setTimeout(() => {
+              const newCursorPosition = start + 1 + indent.length + 1;
+              textarea.selectionStart = newCursorPosition;
+              textarea.selectionEnd = newCursorPosition;
+            }, 0);
 
-          try {
-            window.electron.memo.save(newText);
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Failed to save memo:', error);
+            try {
+              window.electron.memo.save(newText);
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.error('Failed to save memo:', error);
+            }
           }
         }
       }
