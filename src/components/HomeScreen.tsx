@@ -1,12 +1,41 @@
-import { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 export default function HomeScreen() {
   const [text, setText] = useState<string>('');
 
+  useEffect(() => {
+    const loadMemo = async () => {
+      try {
+        const savedText = await window.electron.memo.load();
+        setText(savedText || '');
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load memo:', error);
+      }
+    };
+
+    loadMemo();
+  }, []);
+
+  const handleTextChange = useCallback(
+    async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newText = e.target.value;
+      setText(newText);
+
+      try {
+        await window.electron.memo.save(newText);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to save memo:', error);
+      }
+    },
+    [],
+  );
+
   return (
     <textarea
       value={text}
-      onChange={(e) => setText(e.target.value)}
+      onChange={handleTextChange}
       style={{
         width: '100vw',
         height: '100vh',

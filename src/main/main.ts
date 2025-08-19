@@ -12,6 +12,7 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import Store from 'electron-store';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -25,10 +26,25 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
+const store = new Store({
+  name: 'memo-data',
+  defaults: {
+    memoText: ''
+  }
+});
+
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
+});
+
+ipcMain.handle('load-memo', () => {
+  return store.get('memoText', '');
+});
+
+ipcMain.handle('save-memo', (_event, text: string) => {
+  store.set('memoText', text);
 });
 
 if (process.env.NODE_ENV === 'production') {

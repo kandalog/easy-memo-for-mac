@@ -22,6 +22,10 @@ const electronHandler = {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
   },
+  memo: {
+    load: () => ipcRenderer.invoke('load-memo'),
+    save: (text: string) => ipcRenderer.invoke('save-memo', text),
+  },
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);
