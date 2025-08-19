@@ -169,11 +169,13 @@ export default function HomeScreen() {
         height: '100vh',
         border: 'none',
         padding: '10px',
-        fontSize: '18px',
+        fontSize: '16px',
         fontFamily: 'Menlo, "ヒラギノ角ゴ ProN", monospace',
         resize: 'none',
         outline: 'none',
         margin: 0,
+        backgroundColor: '#1e1e1e',
+        color: '#ffffff',
       }}
     />
   );

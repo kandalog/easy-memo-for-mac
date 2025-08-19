@@ -74,10 +74,11 @@ export default function CodeEditor({
       style={{
         width,
         height,
-        border: '1px solid #ccc',
+        border: '1px solid #404040',
         borderRadius: '4px',
         overflow: 'hidden',
         margin: '8px 0',
+        backgroundColor: '#1e1e1e',
       }}
     >
       <Editor
@@ -85,7 +86,17 @@ export default function CodeEditor({
         language={language}
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}
-        loading={<div style={{ padding: '10px' }}>Loading editor...</div>}
+        loading={
+          <div
+            style={{
+              padding: '10px',
+              backgroundColor: '#1e1e1e',
+              color: '#ffffff',
+            }}
+          >
+            Loading editor...
+          </div>
+        }
         options={{
           automaticLayout: true,
           contextmenu: true,
@@ -97,7 +108,7 @@ export default function CodeEditor({
           readOnly,
           wordWrap: 'on',
         }}
-        theme="vs-light"
+        theme="vs-dark"
       />
     </div>
   );
