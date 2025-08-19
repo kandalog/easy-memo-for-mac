@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 export default function HomeScreen() {
   const [text, setText] = useState<string>('');
+  const [isComposing, setIsComposing] = useState<boolean>(false);
 
   useEffect(() => {
     const loadMemo = async () => {
@@ -39,21 +40,46 @@ export default function HomeScreen() {
         const textarea = e.currentTarget;
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
-        const newText = text.substring(0, start) + '  ' + text.substring(end);
         
-        setText(newText);
+        // Check if cursor is on a line that starts with "・"
+        const lines = text.substring(0, start).split('\n');
+        const currentLine = lines[lines.length - 1];
         
-        setTimeout(() => {
-          textarea.selectionStart = textarea.selectionEnd = start + 2;
-        }, 0);
+        if (currentLine.startsWith('・')) {
+          // Find the start of the current line
+          const lineStartIndex = text.lastIndexOf('\n', start - 1) + 1;
+          // Insert 2 spaces at the beginning of the line
+          const newText = 
+            text.substring(0, lineStartIndex) + 
+            '  ' + 
+            text.substring(lineStartIndex);
+          
+          setText(newText);
+          
+          setTimeout(() => {
+            textarea.selectionStart = textarea.selectionEnd = start + 2;
+          }, 0);
+        } else {
+          // Default behavior: insert 2 spaces at cursor position
+          const newText = text.substring(0, start) + '  ' + text.substring(end);
+          
+          setText(newText);
+          
+          setTimeout(() => {
+            textarea.selectionStart = textarea.selectionEnd = start + 2;
+          }, 0);
+        }
 
         try {
-          window.electron.memo.save(newText);
+          const textToSave = currentLine.startsWith('・') 
+            ? text.substring(0, lineStartIndex) + '  ' + text.substring(lineStartIndex)
+            : text.substring(0, start) + '  ' + text.substring(end);
+          window.electron.memo.save(textToSave);
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error('Failed to save memo:', error);
         }
-      } else if (e.key === 'Enter') {
+      } else if (e.key === 'Enter' && !isComposing) {
         const textarea = e.currentTarget;
         const start = textarea.selectionStart;
         const lines = text.substring(0, start).split('\n');
@@ -103,14 +129,24 @@ export default function HomeScreen() {
         }
       }
     },
-    [text],
+    [text, isComposing],
   );
+
+  const handleCompositionStart = useCallback(() => {
+    setIsComposing(true);
+  }, []);
+
+  const handleCompositionEnd = useCallback(() => {
+    setIsComposing(false);
+  }, []);
 
   return (
     <textarea
       value={text}
       onChange={handleTextChange}
       onKeyDown={handleKeyDown}
+      onCompositionStart={handleCompositionStart}
+      onCompositionEnd={handleCompositionEnd}
       style={{
         width: '100vw',
         height: '100vh',
