@@ -47,13 +47,14 @@ export default function HomeScreen() {
 
         if (currentLine.match(/^\s*・/)) {
           const lineStartIndex = text.lastIndexOf('\n', start - 1) + 1;
-          
+
           if (e.shiftKey) {
             // Shift+Tab: Remove 2 spaces from the beginning of the line if they exist
             const lineContent = text.substring(lineStartIndex);
             if (lineContent.startsWith('  ')) {
               // Remove 2 spaces from the beginning of the line
-              const newText = text.substring(0, lineStartIndex) + lineContent.substring(2);
+              const newText =
+                text.substring(0, lineStartIndex) + lineContent.substring(2);
               setText(newText);
 
               setTimeout(() => {

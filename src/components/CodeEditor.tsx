@@ -11,7 +11,7 @@ interface CodeEditorProps {
   readOnly?: boolean;
 }
 
-export default function CodeEditor({
+function CodeEditor({
   value,
   language,
   onChange,
@@ -113,3 +113,11 @@ export default function CodeEditor({
     </div>
   );
 }
+
+CodeEditor.defaultProps = {
+  width: '100%',
+  height: '200px',
+  readOnly: false,
+};
+
+export default CodeEditor;
