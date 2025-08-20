@@ -143,7 +143,7 @@ const createWindow = async () => {
 
   // Handle window close event - hide instead of close on macOS
   mainWindow.on('close', (event) => {
-    if (process.platform === 'darwin') {
+    if (process.platform === 'darwin' && !app.isQuitting) {
       event.preventDefault();
       mainWindow?.hide();
     }
@@ -192,6 +192,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('before-quit', () => {
+  app.isQuitting = true;
 });
 
 app
