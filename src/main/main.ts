@@ -25,6 +25,7 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let isQuitting = false;
 
 const store = new Store({
   name: 'memo-data',
@@ -143,7 +144,7 @@ const createWindow = async () => {
 
   // Handle window close event - hide instead of close on macOS
   mainWindow.on('close', (event) => {
-    if (process.platform === 'darwin' && !app.isQuitting) {
+    if (process.platform === 'darwin' && !isQuitting) {
       event.preventDefault();
       mainWindow?.hide();
     }
@@ -195,7 +196,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
-  app.isQuitting = true;
+  isQuitting = true;
 });
 
 app

@@ -20,7 +20,11 @@ export default function HomeScreen() {
 
   const handleTextChange = useCallback(
     async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const newText = e.target.value;
+      let newText = e.target.value;
+      
+      // Convert "- " at the beginning of lines to "・"
+      newText = newText.replace(/^(\s*)- /gm, '$1・');
+      
       setText(newText);
 
       try {
