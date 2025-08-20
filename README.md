@@ -28,7 +28,7 @@
 「壊れているアプリ」エラーが出る場合：
 
 ```bash
-# Memoアプリのみの制限を解除
+#　ターミナルで以下実行 (Memoアプリのみの制限を解除)
 sudo xattr -rd com.apple.quarantine /Applications/Memo.app
 ```
 
