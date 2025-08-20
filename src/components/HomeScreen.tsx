@@ -46,27 +46,50 @@ export default function HomeScreen() {
         const currentLine = lines[lines.length - 1];
 
         if (currentLine.match(/^\s*・/)) {
-          // Find the start of the current line
           const lineStartIndex = text.lastIndexOf('\n', start - 1) + 1;
-          // Insert 2 spaces at the beginning of the line
-          const newText = `${text.substring(
-            0,
-            lineStartIndex,
-          )}  ${text.substring(lineStartIndex)}`;
+          
+          if (e.shiftKey) {
+            // Shift+Tab: Remove 2 spaces from the beginning of the line if they exist
+            const lineContent = text.substring(lineStartIndex);
+            if (lineContent.startsWith('  ')) {
+              // Remove 2 spaces from the beginning of the line
+              const newText = text.substring(0, lineStartIndex) + lineContent.substring(2);
+              setText(newText);
 
-          setText(newText);
+              setTimeout(() => {
+                const position = Math.max(lineStartIndex, start - 2);
+                textarea.selectionStart = position;
+                textarea.selectionEnd = position;
+              }, 0);
 
-          setTimeout(() => {
-            const position = start + 2;
-            textarea.selectionStart = position;
-            textarea.selectionEnd = position;
-          }, 0);
+              try {
+                window.electron.memo.save(newText);
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('Failed to save memo:', error);
+              }
+            }
+          } else {
+            // Tab: Insert 2 spaces at the beginning of the line
+            const newText = `${text.substring(
+              0,
+              lineStartIndex,
+            )}  ${text.substring(lineStartIndex)}`;
 
-          try {
-            window.electron.memo.save(newText);
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Failed to save memo:', error);
+            setText(newText);
+
+            setTimeout(() => {
+              const position = start + 2;
+              textarea.selectionStart = position;
+              textarea.selectionEnd = position;
+            }, 0);
+
+            try {
+              window.electron.memo.save(newText);
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.error('Failed to save memo:', error);
+            }
           }
         } else {
           // Default behavior: insert 2 spaces at cursor position
